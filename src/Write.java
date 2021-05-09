@@ -1,18 +1,23 @@
+/*
+입력 쓰레드
+*/
+
 import java.io.*;
 
 public class Write extends Thread{
 
     DataOutputStream dataoutputStream = null;
-    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
+    BufferedReader bufferedReader = null;
 
-    Write(OutputStream outputStream){
-        this.dataoutputStream= new DataOutputStream(outputStream);
+    Write(OutputStream outputStream, BufferedReader bufferedReader){
+        this.dataoutputStream = new DataOutputStream(outputStream);
+        this.bufferedReader = bufferedReader;
     }
     @Override
     public void run() {
-        while(true){
+        while(Client.read.getState() != State.TERMINATED && Client.write.getState() != State.TERMINATED){
             try {
-                dataoutputStream.writeUTF(bufferedReader.readLine());
+                dataoutputStream.writeUTF(Protocol.reqFormat(bufferedReader.readLine()));
             } catch (IOException e) {
                 e.printStackTrace();
                 break;
