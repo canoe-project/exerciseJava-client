@@ -72,17 +72,34 @@ public class Protocol {
         return "request"+"///"+reqMessage+"///"+"CID:"+Client.cid+"///"+"Num_Req:"+Client.num_req+"///"+"END_MSG";
 
     }
-    static Protocol resParser(String res){
-        String reg = "(?<type>\\w+)\\/{3}(?<statusCode>\\d+)\\/{3}(?<message>.+(\\s+.+)*)\\/{3}";
-        Pattern p = Pattern.compile(reg);
-        Matcher m = p.matcher(res);
+    static Protocol resParser(String res) {
+        String testString = "ACK///num_ack:1///END";
 
-        if (m.matches())
-        {
-            return new Protocol(m.group("type"), m.group("statusCode"),m.group("message"));
-        }
-        else{
+        String intro = "(?<type>ACK|response).*";
+
+        Pattern introPatten = Pattern.compile(intro);
+        Matcher IntroMatcher = introPatten.matcher(res);
+
+        String responseReg = "(?<type>\\w+)\\/{3}(?<statusCode>\\d+)\\/{3}(?<message>.+(\\s+.+)*)\\/{3}";
+        String ackReg = "^(?<type>\\w+)\\/{3}Num_ACK:(?<numACK>\\d+)\\/{3}END_MSG$";
+
+        Pattern p = null;
+        Matcher m = null;
+
+        if (IntroMatcher.matches()) {
+            switch (IntroMatcher.group("type")) {
+                case "response":
+                    p = Pattern.compile(responseReg);
+                    m = p.matcher(res);
+                    return new Protocol(m.group("type"), m.group("statusCode"), m.group("message"));
+                case "ACK":
+                    p = Pattern.compile(ackReg);
+                    m = p.matcher(res);
+//                    return new Protocol(m.group("type"), m.group("statusCode"), m.group("message"));
+            }
+        } else {
             return null;
         }
+        return null;
     }
 }
