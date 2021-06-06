@@ -7,21 +7,16 @@ import java.util.TimerTask;
 
 
 public class ReliableTransPortSimulation{
-    private double percentage = 0;
-    private String bufferMessage = "";
+    private double percentage = 70.0;
     private DataOutputStream outputStream = null;
     private Map<String, Timer> requestTimers = new HashMap<String, Timer>();
-    private Map<Integer, Timer> responseTimers = new HashMap<Integer, Timer>();
-    private Map<Integer, Request> requests = new HashMap<Integer, Request>();
+    private Map<String, Timer> responseTimers = new HashMap<String, Timer>();
+    private Map<String, Request> requests = new HashMap<String, Request>();
     private Map<Integer, ACK> acks = new HashMap<Integer, ACK>();
-    private long timeOutInterval;
+    private long timeOutInterval = 1000;
 
     ReliableTransPortSimulation(){
     }
-
-    public void setMessage(String message){
-        this.bufferMessage = message;
-    };
 
     public void setTimer(Request req){
         TimerTask task = new TimerTask(){
@@ -33,12 +28,12 @@ public class ReliableTransPortSimulation{
                         outputStream.writeUTF(req.getReq());
                     }
                 }catch (IOException e){e.printStackTrace();}
+                System.out.println("request timer start");
             }
         };
-
         Timer timer = new Timer();
-
-        requestTimers.put(Integer.toString(req.getNumReq()), timer);
+        requests.put("request"+req.getNumReq(), req);
+        requestTimers.put("request"+req.getNumReq(), timer);
         timer.schedule(task, timeOutInterval, timeOutInterval);
     }
 
@@ -46,28 +41,28 @@ public class ReliableTransPortSimulation{
         TimerTask task = new TimerTask(){
             @Override
             public void run() {
-                double random = Math.random();
-                try{
-                    if(random * 100.0 <= percentage){
-                        outputStream.writeUTF(requests.get(ack.getNumAck()).getReq());
-                    }
-                }catch (IOException e){e.printStackTrace();}
-                responseTimers.remove(Integer.toString(ack.getNumAck()));
+                resendReq(ack.getNumAck());
+                System.out.println("response error");
             }
         };
         Timer timer = new Timer();
 
-        responseTimers.put(ack.getNumAck(), timer);
+        responseTimers.put("ACK"+ack.getNumAck(), timer);
         timer.schedule(task, timeOutInterval);
     }
 
     public void requestTimerCancel(int numReq){
-        requestTimers.get(Integer.toString(numReq)).cancel();
+        requestTimers.get("request"+numReq).cancel();
         requestTimers.remove(Integer.toString(numReq));
+        System.out.println("request Timer Stop");
     }
     public void responseTimerCancel(int numReq){
-        responseTimers.get(Integer.toString(numReq)).cancel();
+        responseTimers.get("ACK"+numReq).cancel();
         responseTimers.remove(Integer.toString(numReq));
+        System.out.println("ACK Timer Stop");
+    }
+    public void resendReq(int numReq){
+        setTimer(requests.get("request"+numReq));
     }
 
     public void setOutputStream(DataOutputStream outputStream){

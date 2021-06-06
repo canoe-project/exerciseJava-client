@@ -9,7 +9,7 @@ public class Request {
     }
 
     public String getReq(){
-        return "request"+"///"+reqMessage+"///"+"CID:"+Client.cid+"///"+"Num_Req:"+Client.num_req+"///"+"END_MSG";
+        return "request"+"///"+reqMessage+"///"+"CID:"+this.cid+"///"+"Num_Req:"+this.num_req+"///"+"END_MSG";
     }
     public String getReqMessage(){
         return this.reqMessage;

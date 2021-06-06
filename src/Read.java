@@ -19,8 +19,9 @@ public class Read extends Thread{
 
         while(Client.read.getState() != State.TERMINATED && Client.write.getState() != State.TERMINATED){
             try {
-                System.out.print("Enter your Message : ");
+
                 String message = dataInputStream.readUTF();
+                System.out.println(message);
                 switch (Protocol.resTypeOf(message)){
                     case "ACK":
                         currentAck = new ACK(message);
@@ -29,8 +30,16 @@ public class Read extends Thread{
                         break;
                 case "response":
                     Response res = new Response(message);
-                    if(currentAck.getNumAck() == res.getNumReq()){
+
+                    if(currentAck ==null){
+                        rtd.resendReq(0);
+
+                    }
+                    else if (currentAck.getNumAck() == res.getNumReq()){
                         rtd.responseTimerCancel(res.getNumReq());
+                    }
+                    else{
+                        rtd.resendReq(currentAck.getNumAck());
                     }
                     System.out.println("response : "+res.getMessage());
                     if (res.getCode() == Protocol.statusCode.Quit){

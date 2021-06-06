@@ -23,8 +23,11 @@ public class Write extends Thread{
         rtp.setOutputStream(dataoutputStream);
         while(Client.read.getState() != State.TERMINATED && Client.write.getState() != State.TERMINATED){
             try {
+                System.out.print("Enter your Message : ");
                 Request reqMessage = new Request(bufferedReader.readLine());
+                System.out.println(Client.num_req);
                 rtp.setTimer(reqMessage);
+                Client.num_req++;
             } catch (IOException e) {
                 e.printStackTrace();
                 break;
